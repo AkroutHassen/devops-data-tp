@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: post-pusher
+  namespace: cours-kubernetes
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: post-pusher
+  template:
+    metadata:
+      labels:
+        app: post-pusher
+    spec:
+      containers:
+        - name: post-pusher
+          image: 2024_kubernetes_post_pusher
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            # posts.json visible à /data/movies-stackexchange/json/posts.json
+            - name: posts-data
+              mountPath: /data/movies-stackexchange/json/posts.json
+              subPath: posts.json
+            # service-account.json au même endroit que dans ton Dockerfile
+            - name: gcp-sa
+              mountPath: /service-account.json
+              subPath: service-account.json
+      volumes:
+        - name: posts-data
+          hostPath:
+            # Chemin ABSOLU sur ta machine, à adapter si différent
+            path: /home/karimmkaouar20/cours_bigquery/cours_kubernetes/post_pusher/data/movies-stackexchange/json/posts.json
+            type: File
+        - name: gcp-sa
+          secret:
+            secretName: gcp-service-account

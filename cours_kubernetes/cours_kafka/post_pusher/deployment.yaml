@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: post-pusher-kafka
+  namespace: cours-kubernetes
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: post-pusher-kafka
+  template:
+    metadata:
+      labels:
+        app: post-pusher-kafka
+    spec:
+      containers:
+      - name: post-pusher-kafka
+        # Utilisez le nom de l'image que vous avez buildée
+        image: 2024_kubernetes_post_pusher
+        imagePullPolicy: IfNotPresent
+        # Adaptez le host Kafka (ex: kafka:9092)
+        command: ["python", "main.py", "--multiple", "--kafka_host=kafka-broker-service:9092"]
