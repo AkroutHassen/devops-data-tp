@@ -61,7 +61,7 @@ jobs:
       
       - name: Create namespace and deploy resources
         run: |
-          kubectl create namespace cours-kubernetes
+          kubectl get namespace cours-kubernetes || kubectl create namespace cours-kubernetes
           kubectl apply -n cours-kubernetes -f k8s-secret.yaml
           kubectl apply -n cours-kubernetes -f k8s-configmap.yaml
           kubectl apply -n cours-kubernetes -f k8s-post-pusher.yaml
