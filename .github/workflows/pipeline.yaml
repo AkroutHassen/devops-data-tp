@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 env:
-  REGISTRY: ghcr.io/${{ toLower(github.repository_owner) }}
+  REGISTRY: ghcr.io/${{ toLowerCase(github.repository_owner) }}
   IMAGE_TAG: ${{ github.sha }}
 
 jobs:
