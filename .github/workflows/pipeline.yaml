@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 env:
-  REGISTRY: ghcr.io/hassen-karim
+  REGISTRY: ghcr.io/akrouthassen
   IMAGE_TAG: ${{ github.sha }}
 
 jobs:
