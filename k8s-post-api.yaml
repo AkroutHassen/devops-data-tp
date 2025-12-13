@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: post-api
-          image: 2024_kubernetes_post_api
+          image: ghcr.io/akrouthassen/post-api:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
@@ -35,6 +35,13 @@ spec:
             - name: gcp-sa
               mountPath: /app/service-account.json
               subPath: service-account.json
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
       volumes:
         - name: gcp-sa
           secret:
