@@ -64,6 +64,8 @@ jobs:
           kubectl get namespace cours-kubernetes || kubectl create namespace cours-kubernetes
           kubectl apply -n cours-kubernetes -f k8s-secret.yaml
           kubectl apply -n cours-kubernetes -f k8s-configmap.yaml
+          kubectl apply -n cours-kubernetes -f k8s-post-consumer-configmap.yaml
+          kubectl apply -n cours-kubernetes -f k8s-post-consumer-secret.yaml
           kubectl apply -n cours-kubernetes -f k8s-post-pusher.yaml
           kubectl apply -n cours-kubernetes -f k8s-post-consumer.yaml
           kubectl apply -n cours-kubernetes -f k8s-post-api.yaml
@@ -79,3 +81,8 @@ jobs:
           kubectl -n cours-kubernetes rollout status deploy/post-pusher
           kubectl -n cours-kubernetes rollout status deploy/post-consumer
           kubectl -n cours-kubernetes rollout status deploy/post-api
+
+      - name: Show pod status
+        run: |
+          kubectl get pods -n cours-kubernetes -o wide
+          for pod in $(kubectl get pods -n cours-kubernetes -o jsonpath='{.items[*].metadata.name}'); do kubectl describe pod $pod -n cours-kubernetes; done
