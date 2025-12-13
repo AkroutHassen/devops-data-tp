@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: post-consumer-config
+  namespace: cours-kubernetes
+data:
+  KAFKA_HOST: "kafka-broker-service.cours-kubernetes:9092"
+  DATASET_ID: "data_devops"
+  TABLE_ID: "posts"
+  TOPIC: "posts"
+  GROUP_ID: "bq-consumer-group"

@@ -1,0 +1,68 @@
+name: deploy
+
+on:
+  push:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io/${{ github.repository_owner }}
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push post_pusher
+        run: |
+          docker build -t $REGISTRY/post-pusher:$IMAGE_TAG -f post_pusher/Dockerfile .
+          docker push $REGISTRY/post-pusher:$IMAGE_TAG
+
+      - name: Build & push post_api
+        run: |
+          docker build -t $REGISTRY/post-api:$IMAGE_TAG -f post_api/Dockerfile .
+          docker push $REGISTRY/post-api:$IMAGE_TAG
+
+      - name: Build & push post_consumer
+        run: |
+          docker build -t $REGISTRY/post-consumer:$IMAGE_TAG -f cours_kafka/post_consumer/Dockerfile .
+          docker push $REGISTRY/post-consumer:$IMAGE_TAG
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/setup-kubectl@v4
+        with:
+          version: v1.30.0
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG_CONTENT }}" | base64 -d > ~/.kube/config
+
+      - name: Set new image tags
+        run: |
+          kubectl -n cours-kubernetes set image deploy/post-pusher post-pusher=$REGISTRY/post-pusher:$IMAGE_TAG
+          kubectl -n cours-kubernetes set image deploy/post-consumer post-consumer=$REGISTRY/post-consumer:$IMAGE_TAG
+          kubectl -n cours-kubernetes set image deploy/post-api post-api=$REGISTRY/post-api:$IMAGE_TAG
+
+      - name: Apply manifests
+        run: |
+          kubectl apply -f k8s-secret.yaml
+          kubectl apply -f k8s-configmap.yaml
+          kubectl apply -f k8s-post-pusher.yaml
+          kubectl apply -f k8s-post-consumer.yaml
+          kubectl apply -f k8s-post-api.yaml
