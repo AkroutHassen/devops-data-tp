@@ -58,6 +58,11 @@ jobs:
           cluster_name: ${{ env.GKE_CLUSTER }}
           location: ${{ env.GKE_LOCATION }}
 
+      
+      - name: Create namespace
+        run: |
+          kubectl create namespace cours-kubernetes
+
       - name: Set new image tags
         run: |
           kubectl -n cours-kubernetes set image deploy/post-pusher post-pusher=$REGISTRY/post-pusher:$IMAGE_TAG
