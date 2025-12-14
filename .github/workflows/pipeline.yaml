@@ -91,4 +91,3 @@ jobs:
       - name: Show pod status
         run: |
           kubectl get pods -n cours-kubernetes -o wide
-          for pod in $(kubectl get pods -n cours-kubernetes -o jsonpath='{.items[*].metadata.name}'); do kubectl describe pod $pod -n cours-kubernetes; done
