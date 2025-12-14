@@ -68,6 +68,8 @@ jobs:
           kubectl apply -n cours-kubernetes -f k8s-post-consumer-secret.yaml
           kubectl apply -n cours-kubernetes -f k8s-post-pusher.yaml
           kubectl apply -n cours-kubernetes -f k8s-post-consumer.yaml
+          kubectl apply -n cours-kubernetes -f cours_kafka/kafka/deployment.yaml
+          kubectl apply -n cours-kubernetes -f cours_kafka/kafka/service.yaml
           kubectl apply -n cours-kubernetes -f k8s-post-api.yaml
 
       - name: Set new image tags

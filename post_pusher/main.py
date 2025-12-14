@@ -69,7 +69,10 @@ def save_post_to_json(post, filepath):
 
 def post_bigquery(transformed_post):
     # Authenticate with Google Cloud and initialize the BigQuery client
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "./service-account.json"
+    if not os.getenv("GOOGLE_APPLICATION_CREDENTIALS"):
+        default_credentials_path = os.path.join(os.path.dirname(__file__), "service-account.json")
+        if os.path.exists(default_credentials_path):
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = default_credentials_path
     client = bigquery.Client()
 
     project_id = client.project

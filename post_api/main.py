@@ -4,8 +4,10 @@ import os
 
 app = FastAPI()
 
-# Specify the path to your service account JSON file
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "./service-account.json"
+if not os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
+    default_credentials_path = os.path.join(os.path.dirname(__file__), "service-account.json")
+    if os.path.exists(default_credentials_path):
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = default_credentials_path
 
 # Initialize the BigQuery client
 client = bigquery.Client()
