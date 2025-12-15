@@ -134,7 +134,24 @@ Ou via CLI (si configuré) :
 ```bash
 bq query --use_legacy_sql=false 'SELECT COUNT(*) AS c FROM `'<project>'.data_devops.posts`'
 ```
+### Accéder à `post-api` (port-forward)
 
+Par défaut, `post-api` n'est pas exposé en public sur GKE. Pour y accéder depuis ton PC, utilise un **port-forward** :
+
+```bash
+kubectl -n cours-kubernetes port-forward deploy/post-api 8000:8000
+```
+
+Ensuite, ouvre dans ton navigateur (ou via curl) :
+- `http://localhost:8000/` (endpoint test)
+- `http://localhost:8000/docs` (documentation Swagger FastAPI)
+
+### Endpoints disponibles (`post_api/main.py`)
+
+- `GET /` → renvoie `{ "Hello": "World" }`
+- `GET /posts/{post_id}` → récupère un post depuis BigQuery à partir de son `id`
+   - exemple : `http://localhost:8000/posts/123`
+   
 ---
 
 ## 5) Pipeline CI/CD (GitHub Actions) : build → push GHCR → deploy GKE
@@ -183,6 +200,8 @@ Rollout :
 kubectl -n cours-kubernetes rollout status deploy/post-consumer --timeout=600s
 kubectl -n cours-kubernetes rollout status statefulset/mongodb --timeout=600s
 ```
+
+
 
 ---
 
