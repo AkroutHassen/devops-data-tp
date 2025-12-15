@@ -20,6 +20,10 @@ spec:
           env:
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: /service-account.json
+            - name: KAFKA_HOST
+              value: "kafka-broker-service.cours-kubernetes:9092"
+            - name: PUSH_INTERVAL_SECONDS
+              value: "10"
           command: ["python", "main.py", "--multiple"]
           resources:
             requests:

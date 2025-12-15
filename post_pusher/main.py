@@ -133,6 +133,10 @@ def post_kafka(transformed_post, kafka_host):
         producer.close()
 
 def main(multiple, kafka_host):
+    # Kafka only: on doit toujours avoir un kafka_host
+    if not kafka_host:
+        raise ValueError("Kafka-only mode: please provide --kafka_host (or set it in Kubernetes env).")
+
     # Load the post from the JSON file
     module_dir = os.path.dirname(os.path.abspath(__file__))
     data_filepath = os.path.join(module_dir, "data/movies-stackexchange/json/posts.json")
@@ -146,13 +150,10 @@ def main(multiple, kafka_host):
         post = random.choice(posts)
 
         allowed_columns = {field.name for field in SCHEMA}
-        # Transform the post for insertion and save to a temporary JSON file
         transformed_post = transform_and_filter_post(post, allowed_columns)
-        
-        if not kafka_host:
-            post_bigquery(transformed_post)
-        else:
-            post_kafka(transformed_post, kafka_host)
+
+        # Kafka only
+        post_kafka(transformed_post, kafka_host)
 
         if not args.multiple:
             break
@@ -164,7 +165,15 @@ def main(multiple, kafka_host):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--multiple', action='store_true', help='Send multiple messages')
-    parser.add_argument('--kafka_host', type=str, required=False, default=None, help='The Kafka host address, changing BigQuery target to Kafka')
+
+    # Kafka-only: par défaut sur le service K8s
+    parser.add_argument(
+        '--kafka_host',
+        type=str,
+        required=False,
+        default=os.getenv("KAFKA_HOST", "kafka-broker-service.cours-kubernetes:9092"),
+        help='Kafka bootstrap server (default: KAFKA_HOST env or kafka-broker-service.cours-kubernetes:9092)'
+    )
     args = parser.parse_args()
 
     main(
