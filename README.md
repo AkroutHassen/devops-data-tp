@@ -54,7 +54,7 @@ kubectl -n cours-kubernetes port-forward svc/<kafka-ui-service-name> 8080:<port-
 ## 3) Création du cluster GKE + authentification
 
 ### 3.1 Création du cluster (GKE Autopilot)
-Nous utilisons un cluster GKE Autopilot (région `europe-west1`).
+Nous utilisons un cluster GKE Autopilot (région `europe-west1`) et nous avons attribué, dans `IAM`, le rôle `Administrateur de Kubernetes Engine` au compte de service utilisé pour le déploiement.
 
 Variables utilisées dans la pipeline : [`.github/workflows/pipeline.yaml`](.github/workflows/pipeline.yaml)
 - `GCP_PROJECT_ID`

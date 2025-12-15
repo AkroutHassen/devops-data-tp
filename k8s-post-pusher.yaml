@@ -33,7 +33,6 @@ spec:
               cpu: 500m
               memory: 512Mi
           volumeMounts:
-            # service-account.json au même endroit que dans ton Dockerfile
             - name: gcp-sa
               mountPath: /service-account.json
               subPath: service-account.json
