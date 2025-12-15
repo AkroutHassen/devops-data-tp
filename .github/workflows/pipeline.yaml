@@ -78,7 +78,7 @@ jobs:
 
       - name: Deploy app secrets & config
         run: |
-          kubectl apply -n cours-kubernetes -f k8s-secret.yaml
+          # kubectl apply -n cours-kubernetes -f k8s-secret.yaml
           kubectl apply -n cours-kubernetes -f k8s-configmap.yaml
           kubectl apply -n cours-kubernetes -f k8s-post-consumer-configmap.yaml
           kubectl apply -n cours-kubernetes -f k8s-post-consumer-secret.yaml
