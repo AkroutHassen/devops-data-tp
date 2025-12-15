@@ -71,9 +71,6 @@ jobs:
           # StatefulSet has immutable fields (e.g. volumeClaimTemplates). If the spec
           # changes between runs, 'kubectl apply' will fail. In that case we recreate
           # the StatefulSet (PVC remains by default).
-          # Apply Secret + Services first (safe to re-apply)
-          kubectl apply -n cours-kubernetes -f k8s-mongodb.yaml --prune=false
-
           if ! kubectl -n cours-kubernetes apply -f k8s-mongodb.yaml; then
             echo "MongoDB StatefulSet apply failed (likely immutable field change). Recreating statefulset/mongodb..."
             kubectl -n cours-kubernetes delete statefulset mongodb --ignore-not-found

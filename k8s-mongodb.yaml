@@ -44,6 +44,9 @@ metadata:
 spec:
   serviceName: mongodb-headless
   replicas: 1
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
   selector:
     matchLabels:
       app: mongodb
