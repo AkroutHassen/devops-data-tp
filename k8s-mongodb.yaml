@@ -6,7 +6,7 @@ metadata:
 type: Opaque
 stringData:
   MONGO_INITDB_ROOT_USERNAME: root
-  MONGO_INITDB_ROOT_PASSWORD: change-me
+  MONGO_INITDB_ROOT_PASSWORD: root
 ---
 apiVersion: v1
 kind: Service
@@ -78,6 +78,7 @@ spec:
     - metadata:
         name: mongodb-data
       spec:
+        storageClassName: standard-rwo
         accessModes: ["ReadWriteOnce"]
         resources:
           requests:

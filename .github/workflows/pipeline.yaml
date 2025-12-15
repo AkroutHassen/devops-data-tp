@@ -79,13 +79,14 @@ jobs:
 
       - name: Set new image tags
         run: |
-          kubectl -n cours-kubernetes rollout status statefulset/mongodb --timeout=300s
+          
           kubectl -n cours-kubernetes set image deploy/post-pusher post-pusher=$REGISTRY/post-pusher:$IMAGE_TAG
           kubectl -n cours-kubernetes set image deploy/post-consumer post-consumer=$REGISTRY/post-consumer:$IMAGE_TAG
           kubectl -n cours-kubernetes set image deploy/post-api post-api=$REGISTRY/post-api:$IMAGE_TAG
 
       - name: Wait for rollouts
         run: |
+          kubectl -n cours-kubernetes rollout status statefulset/mongodb --timeout=600s
           kubectl -n cours-kubernetes rollout status deploy/post-pusher
           kubectl -n cours-kubernetes rollout status deploy/post-consumer
           kubectl -n cours-kubernetes rollout status deploy/post-api
