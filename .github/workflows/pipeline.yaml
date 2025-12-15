@@ -89,7 +89,6 @@ jobs:
       
       - name: Deploy Kafka ui
         run: |
-          kubectl apply -n cours-kubernetes -f cours_kafka/ui/configmap.yaml
           kubectl apply -n cours-kubernetes -f cours_kafka/ui/deployment.yaml
           kubectl apply -n cours-kubernetes -f cours_kafka/ui/service.yaml
 
