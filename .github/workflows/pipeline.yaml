@@ -52,46 +52,50 @@ jobs:
         with:
           lfs: true
 
-      - uses: google-github-actions/auth@v2
+      - name: Auth to GCP
+        uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - uses: google-github-actions/get-gke-credentials@v2
+      - name: Get GKE credentials
+        uses: google-github-actions/get-gke-credentials@v2
         with:
           project_id: ${{ env.GCP_PROJECT_ID }}
           cluster_name: ${{ env.GKE_CLUSTER }}
           location: ${{ env.GKE_LOCATION }}
 
-      
-      - name: Create namespace and deploy resources
+      - name: Ensure namespace
         run: |
           kubectl get namespace cours-kubernetes || kubectl create namespace cours-kubernetes
 
-          # MongoDB
+      - name: Deploy MongoDB (StatefulSet)
+        run: |
           if ! kubectl -n cours-kubernetes apply -f k8s-mongodb.yaml; then
             echo "MongoDB StatefulSet apply failed (likely immutable field change). Recreating statefulset/mongodb..."
             kubectl -n cours-kubernetes delete statefulset mongodb --ignore-not-found
             kubectl -n cours-kubernetes apply -f k8s-mongodb.yaml
           fi
 
-          # Secrets/Config
+      - name: Deploy app secrets & config
+        run: |
           kubectl apply -n cours-kubernetes -f k8s-secret.yaml
           kubectl apply -n cours-kubernetes -f k8s-configmap.yaml
           kubectl apply -n cours-kubernetes -f k8s-post-consumer-configmap.yaml
           kubectl apply -n cours-kubernetes -f k8s-post-consumer-secret.yaml
 
-          # Kafka FIRST (so pusher/consumer can connect)
+      - name: Deploy Kafka
+        run: |
           kubectl apply -n cours-kubernetes -f cours_kafka/kafka/deployment.yaml
           kubectl apply -n cours-kubernetes -f cours_kafka/kafka/service.yaml
 
-          # Apps after Kafka
+      - name: Deploy apps
+        run: |
           kubectl apply -n cours-kubernetes -f k8s-post-pusher.yaml
           kubectl apply -n cours-kubernetes -f k8s-post-consumer.yaml
           kubectl apply -n cours-kubernetes -f k8s-post-api.yaml
 
-      - name: Set new image tags
+      - name: Update images (new tag)
         run: |
-          
           kubectl -n cours-kubernetes set image deploy/post-pusher post-pusher=$REGISTRY/post-pusher:$IMAGE_TAG
           kubectl -n cours-kubernetes set image deploy/post-consumer post-consumer=$REGISTRY/post-consumer:$IMAGE_TAG
           kubectl -n cours-kubernetes set image deploy/post-api post-api=$REGISTRY/post-api:$IMAGE_TAG
@@ -100,10 +104,27 @@ jobs:
         run: |
           kubectl -n cours-kubernetes rollout status deploy/kafka-broker --timeout=600s || true
           kubectl -n cours-kubernetes rollout status statefulset/mongodb --timeout=600s
-          kubectl -n cours-kubernetes rollout status deploy/post-pusher
-          kubectl -n cours-kubernetes rollout status deploy/post-consumer
-          kubectl -n cours-kubernetes rollout status deploy/post-api
+          kubectl -n cours-kubernetes rollout status deploy/post-pusher --timeout=600s
+          kubectl -n cours-kubernetes rollout status deploy/post-consumer --timeout=600s
+          kubectl -n cours-kubernetes rollout status deploy/post-api --timeout=600s
 
       - name: Show pod status
         run: |
           kubectl get pods -n cours-kubernetes -o wide
+
+      - name: Debug (events + describes) on failure
+        if: failure()
+        run: |
+          echo "==== pods ===="
+          kubectl get pods -n cours-kubernetes -o wide || true
+          echo "==== events (last 120) ===="
+          kubectl -n cours-kubernetes get events --sort-by=.metadata.creationTimestamp | tail -n 120 || true
+          echo "==== mongodb describe ===="
+          kubectl -n cours-kubernetes describe statefulset mongodb || true
+          kubectl -n cours-kubernetes describe pod -l app=mongodb || true
+          echo "==== post-consumer logs (tail) ===="
+          kubectl -n cours-kubernetes logs deploy/post-consumer --tail=200 || true
+          echo "==== post-pusher logs (tail) ===="
+          kubectl -n cours-kubernetes logs deploy/post-pusher --tail=200 || true
+          echo "==== post-api logs (tail) ===="
+          kubectl -n cours-kubernetes logs deploy/post-api --tail=200 || true
