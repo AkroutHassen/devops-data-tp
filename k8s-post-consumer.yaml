@@ -51,6 +51,25 @@ spec:
           - name: GOOGLE_APPLICATION_CREDENTIALS
             value: "/service-account.json"
 
+          - name: MONGODB_HOST
+            value: "mongodb.cours-kubernetes.svc.cluster.local"
+          - name: MONGODB_PORT
+            value: "27017"
+          - name: MONGODB_DB
+            value: "data_devops"
+          - name: MONGODB_COLLECTION
+            value: "posts"
+          - name: MONGODB_USER
+            valueFrom:
+              secretKeyRef:
+                name: mongodb-secret
+                key: MONGO_INITDB_ROOT_USERNAME
+          - name: MONGODB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mongodb-secret
+                key: MONGO_INITDB_ROOT_PASSWORD
+
         resources:
           requests:
             cpu: 250m
