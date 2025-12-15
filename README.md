@@ -1,5 +1,7 @@
 # README — DevOps Data TP (Kafka → Consumer → BigQuery + MongoDB) sur GKE
 
+Equipe: Karim Mkaouar - Hassen Akrout
+
 Ce dépôt met en place une chaîne **post-pusher → Kafka → post-consumer → (BigQuery + MongoDB)**, déployée automatiquement sur **GKE** via une pipeline **GitHub Actions** + images dans **GitHub Container Registry (GHCR)**.
 
 ## 1) Architecture cible

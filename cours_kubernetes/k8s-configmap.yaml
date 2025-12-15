@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: posts-config
-  namespace: cours-kubernetes
-data:
-  DATASET_ID: "data_devops"
-  TABLE_ID: "posts"
