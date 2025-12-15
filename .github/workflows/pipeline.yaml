@@ -66,7 +66,25 @@ jobs:
       - name: Create namespace and deploy resources
         run: |
           kubectl get namespace cours-kubernetes || kubectl create namespace cours-kubernetes
-          kubectl apply -n cours-kubernetes -f k8s-mongodb.yaml
+
+          # --- MongoDB (StatefulSet) -------------------------------------------------
+          # StatefulSet has immutable fields (e.g. volumeClaimTemplates). If the spec
+          # changes between runs, 'kubectl apply' will fail. In that case we recreate
+          # the StatefulSet (PVC remains by default).
+          # Apply Secret + Services first (safe to re-apply)
+          kubectl apply -n cours-kubernetes -f k8s-mongodb.yaml --prune=false
+
+          if ! kubectl -n cours-kubernetes apply -f k8s-mongodb.yaml; then
+            echo "MongoDB StatefulSet apply failed (likely immutable field change). Recreating statefulset/mongodb..."
+            kubectl -n cours-kubernetes delete statefulset mongodb --ignore-not-found
+            kubectl -n cours-kubernetes apply -f k8s-mongodb.yaml
+          fi
+
+          kubectl -n cours-kubernetes get statefulset mongodb -o wide || true
+          kubectl -n cours-kubernetes get pvc -o wide | grep mongodb || true
+          kubectl -n cours-kubernetes get pods -l app=mongodb -o wide || true
+          kubectl -n cours-kubernetes get events --sort-by=.metadata.creationTimestamp | tail -n 60 || true
+
           kubectl apply -n cours-kubernetes -f k8s-secret.yaml
           kubectl apply -n cours-kubernetes -f k8s-configmap.yaml
           kubectl apply -n cours-kubernetes -f k8s-post-consumer-configmap.yaml
